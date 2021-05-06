@@ -8,6 +8,8 @@ output: word_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(keras)
+library(neuralnet)
+library(tensorflow)
 suppressMessages(library( fields))
 library(tictoc)
 library(datasets)
@@ -23,6 +25,13 @@ setwd("C:/Users/User1/Desktop/Spring2021/Advanced Stats")
 data(BreastCancer)
 di <- describe(BreastCancer)
 head(BreastCancer)
+
+BreastCancer[,'Class'] <- as.numeric(BreastCancer[,'Class'] == "benign")
+head(BreastCancer)
+
+BreastCancer = na.omit(BreastCancer)
+head(BreastCancer)
+
 #no missing data points, all points are numeric, however there is an ID variable which we will throw out for training.
 #9 training variables
 #Got data set from mlbench!
@@ -43,6 +52,19 @@ trainX <- select (train, -Class)
 trainY<- select (train, Class)
 testX <- select (test, -Class)
 testY<- select (test, Class)
+
+
+trainXM <- data.matrix(trainX[,2:10])
+testXM <- data.matrix(testX[,2:10])
+
+
+trainYMC <- to_categorical(trainYM,2)
+#trainYM[cbind(1:length(trainY), testY)]
+
+dim(trainXM)
+dim(trainYM)
+head(trainYM)
+
 ```
 
 
@@ -52,10 +74,50 @@ testY<- select (test, Class)
 ### setup object
 NN_model_1 <- keras_model_sequential()
 ### add network architecture
-NN_model_1 %>% layer_dense(units = 28,  activation ='sigmoid', input_shape = ) %>%
-  layer_dense(units = 10, activation ='softmax')
+NN_model_1 %>% layer_dense(units = nrow(trainXM),  activation ='sigmoid', input_shape = c(1, ncol(trainXM))) %>%
+  layer_dense(units = 2, activation ='softmax')
 ### compile
 NN_model_1 %>% compile(loss ='categorical_crossentropy',optimizer = optimizer_adam(),metrics = c('accuracy'))
+
+tic()
+NN_model_1 %>% fit(trainXM, trainYMC, epochs=15, batch_size=32)
+toc()
 ```
 
+#GLM Classifier - Binomial Regression
+```{r}
+
+logit <- glm(Class ~ Cl.thickness + Cell.size + Cell.shape + Marg.adhesion + Epith.c.size + Bare.nuclei + Bl.cromatin, family = binomial(link='logit'), data=train)
+
+preds <- predict(logit, testX, type="response")
+library(ROCR)
+pr = prediction(preds, test$Class)
+prf = performance(pr, measure="tpr", x.measure="fpr")
+plot(prf)
+
+summary(logit)
+
+plot(logit)
+auc <- performance(pr, measure="auc")
+auc@y.values[[1]]
+```
+
+```{r}
+pos_ind <- which(preds > 0.5)
+zero_ind <- which(preds <= 0.5)
+y_hat = c()
+y_hat[pos_ind] = 1
+y_hat[zero_ind]= 0 
+confusion<-table(testY$Class, y_hat)
+print(confusion)
+accuracy <- diag(confusion)/ rowSums(confusion)
+print(accuracy)
+```
+
+```{r}
+
+hist(preds)
+hist(testY$Class)
+
+```
 
