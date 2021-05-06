@@ -1,0 +1,23 @@
+---
+title: "Final Project R Code"
+author: "Mitchell Cutts & Morgan Cox"
+date: "May 12, 2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(keras)
+suppressMessages(library( fields))
+library(tictoc)
+library(datasets)
+library(mlbench)
+setwd("C:/Users/User1/Desktop/Spring2021/Advanced Stats")
+```
+
+#Loading Data and Preprocessing
+
+```{r}
+bc <- data(BreastCancer)
+
+```
