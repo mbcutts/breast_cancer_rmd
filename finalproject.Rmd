@@ -12,12 +12,50 @@ suppressMessages(library( fields))
 library(tictoc)
 library(datasets)
 library(mlbench)
+library(Hmisc)
+library(dplyr)
 setwd("C:/Users/User1/Desktop/Spring2021/Advanced Stats")
 ```
 
-#Loading Data and Preprocessing
+#Loading Data and Preprocessing - Data Description
 
 ```{r}
-bc <- data(BreastCancer)
-
+data(BreastCancer)
+di <- describe(BreastCancer)
+head(BreastCancer)
+#no missing data points, all points are numeric, however there is an ID variable which we will throw out for training.
+#9 training variables
+#Got data set from mlbench!
+#https://search.r-project.org/CRAN/refmans/mlbench/html/BreastCancer.html
 ```
+
+#Training and Testing Split (75/25)
+```{r}
+#consulted https://stackoverflow.com/questions/17200114/how-to-split-data-into-training-testing-sets-using-sample-function for this problem. Was looking for a built in function for R to do this but this manual method works just as well.
+sample_size <- floor(nrow(BreastCancer) * 0.75)
+set.seed(12345)
+training_indices <- sample(seq_len(nrow(BreastCancer)), size = sample_size)
+response = c("Class")
+
+train <- BreastCancer[training_indices, ]
+test <- BreastCancer[-training_indices, ]
+trainX <- select (train, -Class)
+trainY<- select (train, Class)
+testX <- select (test, -Class)
+testY<- select (test, Class)
+```
+
+
+#Statistical Methods and Graphical Methods -- Standard Neural Network Architecture 
+```{r}
+### setup object
+### setup object
+NN_model_1 <- keras_model_sequential()
+### add network architecture
+NN_model_1 %>% layer_dense(units = 28,  activation ='sigmoid', input_shape = ) %>%
+  layer_dense(units = 10, activation ='softmax')
+### compile
+NN_model_1 %>% compile(loss ='categorical_crossentropy',optimizer = optimizer_adam(),metrics = c('accuracy'))
+```
+
+
